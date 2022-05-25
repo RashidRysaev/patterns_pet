@@ -1,5 +1,5 @@
 from core import App
-from views import IndexPageView, AboutPageView
+from views import IndexPageView, AboutPageView, ContactPageView
 
 
 def front_controller(request):
@@ -13,7 +13,8 @@ def front_controller(request):
 
 routes = {
     '/': IndexPageView(),
-    '/about': AboutPageView()
+    '/about': AboutPageView(),
+    '/contact': ContactPageView(),
 }
 
 controllers = [
