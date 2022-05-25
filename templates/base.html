@@ -7,6 +7,14 @@
     <title>{% block page_title %}{% endblock page_title %}</title>
 </head>
 <body>
+    {% block menu %}
+        <menu>
+            <a href="/">Home page</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contacts</a>
+        </menu>
+    {% endblock menu %}
+
     {% block main %}
     {% endblock main %}
 </body>
