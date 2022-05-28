@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block page_title %}
+    List of courses
+{% endblock %}
+{% block main %}
+    <h2>Here are the glorious courses!</h2>
+    <ul>
+        {% for object in objects_list %}
+            <li>
+                {{ object.name }} | <a href="/copy_course/?name={{ object.name }}">Copy course</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <h3>You can also create a new course <a href="/create_course/">here</a>.</h3>
+    <h4>And if that is not enough for you, you can create a new category <a href="/create_category/">here</a>.</h4>
+{% endblock %}
