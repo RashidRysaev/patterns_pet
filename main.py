@@ -1,5 +1,5 @@
 from core import App
-from views import IndexPageView, AboutPageView, ContactPageView
+from views import IndexPageView, AboutPageView, ContactPageView, CoursesListView, CreateCourseView, CopyCourseView, CategoryListView, CreateCategoryView
 
 
 def front_controller(request):
@@ -15,6 +15,11 @@ routes = {
     '/': IndexPageView(),
     '/about': AboutPageView(),
     '/contact': ContactPageView(),
+    '/all_courses': CoursesListView(),
+    '/create_course': CreateCourseView(),
+    '/copy_course': CopyCourseView(),
+    '/all_categories': CategoryListView(),
+    '/create_category': CreateCategoryView(),
 }
 
 controllers = [

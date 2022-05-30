@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block page_title %}
+    List of course categories
+{% endblock page_title %}
+{% block main %}
+    <h2>Here are the glorious categories!</h2>
+    <ul>
+        {% for object in objects_list %}
+            <li>
+                {{ object.name }} | # of courses: {{ object.count_courses() }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock main %}
