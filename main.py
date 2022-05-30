@@ -1,29 +1,24 @@
 from core import App
-from views import IndexPageView, AboutPageView, ContactPageView, CoursesListView, CreateCourseView, CopyCourseView, CategoryListView, CreateCategoryView
+from views import *
+from front_controllers import front_controller
+from decos import UrlPaths
 
 
-def front_controller(request):
-    """
-    A simple front controller that just changes one thing in context.
+# routes = {
+#     '/': IndexPageView(),
+#     '/about': AboutPageView(),
+#     '/contact': ContactPageView(),
+#     '/all_courses': CoursesListView(),
+#     '/create_course': CreateCourseView(),
+#     '/copy_course': CopyCourseView(),
+#     '/all_categories': CategoryListView(),
+#     '/create_category': CreateCategoryView(),
+# }
 
-    :param request: HTTP-request
-    """
-    request['keyword'] = 'Oi mate!'
-
-
-routes = {
-    '/': IndexPageView(),
-    '/about': AboutPageView(),
-    '/contact': ContactPageView(),
-    '/all_courses': CoursesListView(),
-    '/create_course': CreateCourseView(),
-    '/copy_course': CopyCourseView(),
-    '/all_categories': CategoryListView(),
-    '/create_category': CreateCategoryView(),
-}
+routes = UrlPaths()
 
 controllers = [
     front_controller
 ]
 
-app = App(routes, controllers)
+app = App(routes.URLS, controllers)
