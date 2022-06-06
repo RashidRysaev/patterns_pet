@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
+from typing import Any
+from jsonpickle import loads, dumps
 
 
 class NamedSingleton(type):
@@ -52,11 +54,48 @@ class PrototypeMixin:
         return deepcopy(self)
 
 
+class Subject:
+     """
+     Abstract subject (emitter) class for the Observer pattern.
+     """
+
+     def __init__(self):
+         """
+         Initializes the class object, prepares the list of all
+         know observers.
+         """
+         self.observers = []
+
+     def notify(self):
+         """
+         Notifies all the observers of the changes.
+         """
+         for observer in self.observers:
+             observer.update(self)
+
+
+class Observer:
+    """
+    Abstract observer that updates the data once it receives the
+    signal from the Subject. Part of the Observer pattern.
+    """
+
+    def update(self, subject):
+        """
+        :param subject: emitter of the signal
+        """
+        pass
+
+
 class User(metaclass=ABCMeta):
     """
     Base metaclass for a user. Main functionality TBD
     """
-    pass
+    def __init__(self, name):
+        """
+        :param name: username
+        """
+        self.name = name
 
 
 class Factory(metaclass=ABCMeta):
@@ -72,3 +111,46 @@ class Factory(metaclass=ABCMeta):
         Must be implemented in all factories using this class as meta.
         """
         pass
+
+
+class BaseSerializer:
+     """
+     Basic serializer for use in the framework. Utilizes the jsonpickle lib.
+     """
+
+     def __init__(self, obj):
+         """
+         Initializes the serializer object.
+
+         :param obj: object to serialize
+         """
+         self.object = obj
+
+     def save(self):
+         """
+         Serializes the data utilizing the jsonpickle lib.
+         """
+         return dumps(self.object)
+
+     @staticmethod
+     def load(data):
+         """
+         Deserializes the data using the jsonpickle lib.
+         """
+         return loads(data)
+
+
+class LoggerStrategy(metaclass=ABCMeta):
+     """
+     Abstract metaclass for the logger utilizing the Strategy pattern.
+     """
+
+     @abstractmethod
+     def write(self, text):
+         """
+         Abstract method that must be present in all subclasses of
+         the Logger Strategy. Handles the writing of the logs.
+
+         :param text: text to log
+         """
+         pass

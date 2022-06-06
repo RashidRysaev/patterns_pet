@@ -1,136 +1,134 @@
 from datetime import datetime
 
+from bases import BaseSerializer
 from template_renderer import render_template
+from core_views import TemplateView, ListView, CreateView
+from core import App
 from logs.config import Logger
-from models import OnlineUniversity
+from models import OnlineUniversity, EmailNotifier, TextMessageNotifier
 from decos import UrlPaths, debug
 
-
 site = OnlineUniversity()
-logger = Logger('main')
+email_notifier = EmailNotifier()
+text_notifier = TextMessageNotifier()
+logger = Logger('file', 'main')
 routes = UrlPaths()
 
 
-@routes.add_route('/')
-class IndexPageView:
-    """
-    Simple view rendering the index page.
-    """
+@routes.add_route('/api/')
+class CoursesApiView:
+    def __call__(self, request: dict):
+        logger.logger(f'{__name__}.py; CoursesApiView; sending the list of'
+                      f'courses via API.')
+        return '200 Ok', [BaseSerializer(site.courses).save().encode('utf-8')]
 
-    def __call__(self, request):
-        """
-        :param request: HTTP-request
-        :return: tuple, first element is string, second - HTML-code
-        """
-        logger.logger(f'{__name__}.py; IndexView; requested index page.')
-        keyword = request.get('keyword', None)
-        return '200 Ok', [render_template('templates/index.html',
-                                        keyword=keyword).encode('utf-8')]
+
+@routes.add_route('/')
+class IndexView(TemplateView):
+    """
+    Class-based view for an index page. Subclass to TemplateView.
+    Main functionality is realized in the parent class.
+    """
+    template_name = 'templates/index.html'
 
 
 @routes.add_route('/about/')
-class AboutPageView:
+class AboutView(TemplateView):
     """
-    Simple view rendering the about page.
+    Class-based view for an about page. Subclass to TemplateView.
+    Main functionality is realized in the parent class.
     """
+    template_name = 'templates/about.html'
 
-    def __call__(self, request):
+
+@routes.add_route('/contacts/')
+class ContactsView(TemplateView):
+    """
+    Class-based view for a contacts page. Subclass to TemplateView.
+    Since it needs to be able to handle the POST-requests, the __call__
+    method has been overridden here.
+    """
+    template_name = 'templates/contacts.html'
+
+    @staticmethod
+    @debug
+    def save_to_file(request):
         """
-        :param request: HTTP-request
-        :return: tuple, first element is string, second - HTML-code
+        Saves data from incoming POST-request to file.
+        :param request: incoming data
         """
-        logger.logger(f'{__name__}.py; AboutView; requested about page.')
-        return '200 Ok', [render_template(
-            'templates/about.html').encode('utf-8')]
-
-
-@routes.add_route('/contact/')
-class ContactPageView:
-    """
-    Simple view rendering the contact form page.
-    """
+        try:
+            logger.logger('Trying to save the POST-data to file.')
+            with open(f"incoming_msg_{datetime.now()}.txt", 'w') as f:
+                text = f"Incoming message:\n" \
+                       f"From: {request['data']['email']};\n" \
+                       f"Subject: {request['data']['header']};\n" \
+                       f"Text:\n{request['data']['message']}"
+                f.write(text)
+                f.close()
+        except Exception as e:
+            logger.logger(f'Saving to file failed: {e}.')
+        else:
+            logger.logger('Data saved successfully.')
 
     @debug
     def __call__(self, request):
         """
         Main callable method that does the magic.
-
-        :param request: HTTP-request
-        :return: tuple, first element is string, second - HTML-code
-        """
-        logger.logger(f'{__name__}.py; ContactPageView; requested Contacts page.')
-        if request['method'] == 'POST':
-            self.save_to_file(request)
-            return '200 Ok', [render_template(
-                'templates/contact.html').encode('utf-8')]
-        else:
-            return '200 Ok', [render_template(
-                'templates/contact.html').encode('utf-8')]
-
-    @staticmethod
-    @debug
-    def save_to_file(self, request):
-        """
-        Saves data from incoming POST-request to file.
-
-        :param request: incoming data
-        """
-        with open(f"incoming_msg_{datetime.now()}", 'w') as f:
-            text = f"Incoming message:\n\n" \
-                f"From: {request['data']['email']};\n" \
-                f"Subject: {request['data']['subject']};\n" \
-                f"Text:\n{request['data']['message_text']}"
-            f.write(text)
-            f.close()
-
-
-@routes.add_route('/all_courses/')
-class CoursesListView:
-    """
-    Class-based view for a list of all available courses.
-    """
-
-    def __call__(self, request):
-        """
-        :param request: HTTP-request
-        :return: tuple, first element is string, second HTML-code
-        """
-        logger.logger(
-            f'{__name__}.py; CoursesListView; requested the list of courses.')
-        return '200 Ok', [render_template(
-            'templates/courses_list.html',
-            objects_list=site.courses).encode('utf-8')]
-
-
-@routes.add_route('/create_course/')
-class CreateCourseView:
-    """
-    Class-based view for the course creation page.
-    """
-
-    def __call__(self, request):
-        """
         :param request: HTTP-request
         :return: tuple, first element is string, second HTML code
         """
-        logger.logger(
-            f'{__name__}.py: CreateCourseView; requested course creation.')
         if request['method'] == 'POST':
-            data = request['data']
-            name = data['name']
-            cat_id = data.get('category_id')
-            category = None
-            if cat_id:
-                category = site.find_category(int(cat_id))
-                new_course = site.create_course('online', name, category)
-                site.courses.append(new_course)
+            self.save_to_file(request)
             return '200 Ok', [render_template(
-                'templates/create_course.html').encode('utf-8')]
+                'templates/contacts.html').encode('utf-8')]
         else:
-            categories = site.course_categories
             return '200 Ok', [render_template(
-                'templates/create_course.html',
-                categories=categories).encode('utf-8')]
+                'templates/contacts.html').encode('utf-8')]
+
+
+@routes.add_route('/all_courses/')
+class CoursesListView(ListView):
+    """
+    Class-based view for a list of all available courses.
+    Subclass to ListView. Main functionality is realized in the
+    parent class.
+    """
+    template_name = 'templates/courses_list.html'
+    queryset = site.courses
+
+
+@routes.add_route('/create_course/')
+class CreateCourseView(CreateView):
+    """
+    Class-based view for the course creation page.
+    """
+    template_name = 'templates/create_course.html'
+
+    def get_context_data(self):
+        """
+        Retrieves the context data for the template and updates it
+        with the list of existing courses.
+        """
+        context = super().get_context_data()
+        context['categories'] = site.course_categories
+        return context
+
+    def create_object(self, data):
+        """
+        Creates a new course object from the data pulled from
+        the POST-request.
+        :param data: new course data
+        """
+        name = data['name']
+        cat_id = data.get('category_id')
+        category = None
+        if cat_id:
+            category = site.find_category(int(cat_id))
+        new_course = site.create_course('online', name, category)
+        new_course.observers.append(email_notifier)
+        new_course.observers.append(text_notifier)
+        site.courses.append(new_course)
 
 
 @routes.add_route('/copy_course/')
@@ -139,6 +137,7 @@ class CopyCourseView:
     Class-based view to handle the copying of a course.
     """
 
+    @debug
     def __call__(self, request):
         """
         Main callable method. Handles the copying of a given
@@ -146,9 +145,7 @@ class CopyCourseView:
         :param request: HTTP-requests
         :return: tuple, first element is string, second HTML code
         """
-        #params = request['params']
-        params = request.get('request_params', None)
-        print(params)
+        params = request['request_params']
         name = params['name']
         logger.logger(
             f'{__name__}.py; CopyCourseView; copying course {name}.')
@@ -164,53 +161,100 @@ class CopyCourseView:
 
 
 @routes.add_route('/all_categories/')
-class CategoryListView:
+class CategoryListView(ListView):
     """
     Class-based view for the list of existing course categories.
+    Subclass to ListView. Main functionality is realized in the
+    parent class.
     """
-
-    @debug
-    def __call__(self, request):
-        """
-        :param request: HTTP-request
-        :return: tuple, first element is string, second HTML-code
-        """
-        logger.logger(
-            f'{__name__}.py; CategoryListView; '
-            f'requested the list of course categories.')
-        return '200 Ok', [render_template(
-            'templates/categories_list.html',
-            objects_list=site.course_categories).encode('utf-8')]
+    template_name = 'templates/categories_list.html'
+    queryset = site.course_categories
 
 
 @routes.add_route('/create_category/')
-class CreateCategoryView:
+class CreateCategoryView(CreateView):
     """
     Class-based view for a category creation page.
     """
+    template_name = 'templates/create_category.html'
 
-    @debug
-    def __call__(self, request):
+    def get_context_data(self):
         """
-        :param request: HTTP-request
-        :return: tuple, first element is string, second HTML code
+        Retrieves the context data for the template and updates it
+        with the list of existing courses.
         """
-        logger.logger(
-            f'{__name__}.py; CreateCategoryView; creating new category.')
-        if request['method'] == 'POST':
-            data = request['data']
-            name = data['name']
-            cat_id = data.get('category_id')
-            category = None
-            if cat_id:
-                category = site.find_category(int(cat_id))
-            new_category = site.create_category(name, category)
-            site.course_categories.append(new_category)
-            return '200 Ok', [render_template(
-                'templates/create_category.html').encode('utf-8')]
-        else:
-            categories = site.course_categories
-            return '200 Ok', [render_template(
-                'templates/create_category.html',
-                categories=categories).encode('utf-8')]
+        context = super().get_context_data()
+        context['categories'] = site.course_categories
+        return context
 
+    def create_object(self, data):
+        """
+        Creates a new course category object from the data pulled from
+        the POST-request.
+        :param data: new course data
+        """
+        name = data['name']
+        cat_id = data.get('category_id')
+        category = None
+        if cat_id:
+            category = site.find_category(int(cat_id))
+        new_category = site.create_category(name, category)
+        site.course_categories.append(new_category)
+
+
+@routes.add_route('/all_students/')
+class StudentsListView(ListView):
+    """
+    Class-based view for the list of all students.
+    """
+    template_name = 'templates/students_list.html'
+    queryset = site.students
+
+
+@routes.add_route('/create_student/')
+class StudentCreateView(CreateView):
+    """
+    Class-based view for the creation of a new student.
+    """
+    template_name = 'templates/create_student.html'
+
+    def create_object(self, data):
+        """
+        Creates a new student using the data retrieved from
+        the POST-request.
+        :param data: new student data
+        """
+        name = data['name']
+        new_student = site.create_user('student', name)
+        site.students.append(new_student)
+
+
+@routes.add_route('/enlist_student/')
+class EnlistStudentView(CreateView):
+    """
+    Class-based view for the enrollment of a student on a course.
+    """
+    template_name = 'templates/enlist_student.html'
+
+    def get_context_data(self):
+        """
+        Retrieves the context data for the template and updates it
+        with the list of existing courses and students.
+        """
+        context = super().get_context_data()
+        context['students'] = site.students
+        context['courses'] = site.courses
+        return context
+
+    def create_object(self, data):
+        """
+        Retrieves the course and student's name from the POST-request
+        data. Then retrieves the objects for the two. And finally
+        enlists the student in the course.
+        :param data: POST-request data
+        """
+        course_name = data['course_name']
+        course = site.get_course(course_name)
+        student_name = data['student_name']
+        student = site.get_student(student_name)
+        course.add_student(student)
