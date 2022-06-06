@@ -24,16 +24,16 @@ class App:
         request_method = environment['REQUEST_METHOD']
         query_string = environment['QUERY_STRING']
         path = environment['PATH_INFO']
-        if path.endswith('/') and not path == '/':
-            path = path[:-1]
+        if not path.endswith('/'):
+            path = f'{path}/'
         data = self.get_wsgi_input_data(environment)
         data = self.parse_wsgi_input_data(data)
         request_parameters = self.parse_input_data(query_string)
         if path in self.urls:
             view = self.urls[path]
-            self.request['req_params'] = request_parameters
-            self.request['data'] = data
             self.request['method'] = request_method
+            self.request['data'] = data
+            self.request['req_params'] = request_parameters
             for controller in self.front_controllers:
                 controller(self.request)
             resp, body = view(self.request)

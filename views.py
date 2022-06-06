@@ -3,11 +3,15 @@ from datetime import datetime
 from template_renderer import render_template
 from logs.config import Logger
 from models import OnlineUniversity
+from decos import UrlPaths, debug
+
 
 site = OnlineUniversity()
 logger = Logger('main')
+routes = UrlPaths()
 
 
+@routes.add_route('/')
 class IndexPageView:
     """
     Simple view rendering the index page.
@@ -24,6 +28,7 @@ class IndexPageView:
                                         keyword=keyword).encode('utf-8')]
 
 
+@routes.add_route('/about/')
 class AboutPageView:
     """
     Simple view rendering the about page.
@@ -39,11 +44,13 @@ class AboutPageView:
             'templates/about.html').encode('utf-8')]
 
 
+@routes.add_route('/contact/')
 class ContactPageView:
     """
     Simple view rendering the contact form page.
     """
 
+    @debug
     def __call__(self, request):
         """
         Main callable method that does the magic.
@@ -61,6 +68,7 @@ class ContactPageView:
                 'templates/contact.html').encode('utf-8')]
 
     @staticmethod
+    @debug
     def save_to_file(self, request):
         """
         Saves data from incoming POST-request to file.
@@ -76,6 +84,7 @@ class ContactPageView:
             f.close()
 
 
+@routes.add_route('/all_courses/')
 class CoursesListView:
     """
     Class-based view for a list of all available courses.
@@ -93,6 +102,7 @@ class CoursesListView:
             objects_list=site.courses).encode('utf-8')]
 
 
+@routes.add_route('/create_course/')
 class CreateCourseView:
     """
     Class-based view for the course creation page.
@@ -123,6 +133,7 @@ class CreateCourseView:
                 categories=categories).encode('utf-8')]
 
 
+@routes.add_route('/copy_course/')
 class CopyCourseView:
     """
     Class-based view to handle the copying of a course.
@@ -152,11 +163,13 @@ class CopyCourseView:
             objects_list=site.courses).encode('utf-8')]
 
 
+@routes.add_route('/all_categories/')
 class CategoryListView:
     """
     Class-based view for the list of existing course categories.
     """
 
+    @debug
     def __call__(self, request):
         """
         :param request: HTTP-request
@@ -170,11 +183,13 @@ class CategoryListView:
             objects_list=site.course_categories).encode('utf-8')]
 
 
+@routes.add_route('/create_category/')
 class CreateCategoryView:
     """
     Class-based view for a category creation page.
     """
 
+    @debug
     def __call__(self, request):
         """
         :param request: HTTP-request
