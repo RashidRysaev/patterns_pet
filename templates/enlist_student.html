@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block page_title %}
+{% block title %}
     Enlist a student in a course
 {% endblock %}
-{% block main %}
+{% block content %}
+    <body>
+    {% include "inc-menu.html" %}
     <h1>Enlist a student in a new course!</h1>
     <form method="post">
         <label>
@@ -22,4 +24,5 @@
         <br>
         <button type="submit" class="btn btn-outline-success">Enlist!</button>
     </form>
-{% endblock %} 
+    </body>
+{% endblock %}

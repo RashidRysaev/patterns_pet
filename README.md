@@ -1,5 +1,4 @@
-Run 
+Simple WSGI-framework. Part of the learning process.
 
-`gunicorn main:app`
-
-in order to start the app.
+Utilizes Gunicorn.
+In order to start it, simply run the _main.py_ file.

@@ -1,7 +1,14 @@
+"""
+Module with metaclasses and abstract metaclasses for various classes
+throughout the framework. This module includes a Singleton metaclass
+for the logging module, a mixin for the Prototype pattern, Observer and
+Subject classes for Observer pattern, BaseSerializer for the framework
+"""
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from typing import Any
-from jsonpickle import loads, dumps
+
+from jsonpickle import dumps, loads
 
 
 class NamedSingleton(type):
@@ -12,8 +19,11 @@ class NamedSingleton(type):
     such a logger is called upon).
     """
 
-    def __init__(cls, clsname, bases, clsdict, **kwargs):
+    def __init__(cls, clsname: str, bases: tuple, clsdict: dict, **kwargs):
         """
+        Metaclass initialization, creates a private class attribute
+        and calls on the __init__() of the super class.
+
         :param clsname: name of the class
         :param bases: tuple of base classes inherited
         :param clsdict: namespace dictionary of the class
@@ -49,29 +59,30 @@ class PrototypeMixin:
         """
         The method that utilizes the deepcopy function to create a
         copy of the class-object fed into it.
+
         :return: a copy of the class-object
         """
         return deepcopy(self)
 
 
 class Subject:
-     """
-     Abstract subject (emitter) class for the Observer pattern.
-     """
+    """
+    Abstract subject (emitter) class for the Observer pattern.
+    """
 
-     def __init__(self):
-         """
-         Initializes the class object, prepares the list of all
-         know observers.
-         """
-         self.observers = []
+    def __init__(self):
+        """
+        Initializes the class object, prepares the list of all
+        know observers.
+        """
+        self.observers = []
 
-     def notify(self):
-         """
-         Notifies all the observers of the changes.
-         """
-         for observer in self.observers:
-             observer.update(self)
+    def notify(self):
+        """
+        Notifies all the observers of the changes.
+        """
+        for observer in self.observers:
+            observer.update(self)
 
 
 class Observer:
@@ -80,8 +91,10 @@ class Observer:
     signal from the Subject. Part of the Observer pattern.
     """
 
-    def update(self, subject):
+    def update(self, subject: Subject):
         """
+        Abstract placeholder-method that does the update.
+
         :param subject: emitter of the signal
         """
         pass
@@ -91,8 +104,11 @@ class User(metaclass=ABCMeta):
     """
     Base metaclass for a user. Main functionality TBD
     """
-    def __init__(self, name):
+
+    def __init__(self, name: str):
         """
+        Initializes the class object.
+
         :param name: username
         """
         self.name = name
@@ -110,47 +126,46 @@ class Factory(metaclass=ABCMeta):
         Abstract method used for creation of instances.
         Must be implemented in all factories using this class as meta.
         """
-        pass
 
 
 class BaseSerializer:
-     """
-     Basic serializer for use in the framework. Utilizes the jsonpickle lib.
-     """
+    """
+    Basic serializer for use in the framework. Utilizes the jsonpickle lib.
+    """
 
-     def __init__(self, obj):
-         """
-         Initializes the serializer object.
+    def __init__(self, obj):
+        """
+        Initializes the serializer object.
 
-         :param obj: object to serialize
-         """
-         self.object = obj
+        :param obj: object to serialize
+        """
+        self.object = obj
 
-     def save(self):
-         """
-         Serializes the data utilizing the jsonpickle lib.
-         """
-         return dumps(self.object)
+    def save(self) -> str:
+        """
+        Serializes the data utilizing the jsonpickle lib.
+        """
+        return dumps(self.object)
 
-     @staticmethod
-     def load(data):
-         """
-         Deserializes the data using the jsonpickle lib.
-         """
-         return loads(data)
+    @staticmethod
+    def load(data: Any) -> Any:
+        """
+        Deserializes the data using the jsonpickle lib.
+        """
+        return loads(data)
 
 
 class LoggerStrategy(metaclass=ABCMeta):
-     """
-     Abstract metaclass for the logger utilizing the Strategy pattern.
-     """
+    """
+    Abstract metaclass for the logger utilizing the Strategy pattern.
+    """
 
-     @abstractmethod
-     def write(self, text):
-         """
-         Abstract method that must be present in all subclasses of
-         the Logger Strategy. Handles the writing of the logs.
+    @abstractmethod
+    def write(self, text: str):
+        """
+        Abstract method that must be present in all subclasses of
+        the Logger Strategy. Handles the writing of the logs.
 
-         :param text: text to log
-         """
-         pass
+        :param text: text to log
+        """
+        pass

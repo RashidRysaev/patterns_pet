@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}
+    Contacts
+{% endblock %}
+{% block content %}
+    <body>
+    {% include "inc-menu.html" %}
+    <form method="post">
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="floatingInput" name="email" placeholder="Ваш имейл">
+            <label for="floatingInput">Ваш имейл</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="floatingInput" name="header" placeholder="Заголовок сообщения">
+            <label for="floatingInput">Заголовок сообщения</label>
+        </div>
+        <div class="form-floating">
+            <textarea class="form-control" placeholder="Текст сообщения" name="message"
+                      id="floatingTextarea"></textarea>
+            <label for="floatingTextarea">Текст сообщения</label>
+        </div>
+        <button type="submit" class="btn btn-outline-primary">Отправить</button>
+    </form>
+    </body>
+{% endblock %}

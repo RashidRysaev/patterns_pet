@@ -1,7 +1,13 @@
+"""
+Module that renders the templates. The main function here
+takes in the name of the template, the folder the templates are stored in
+and any keyword arguments you might want to pass into the template, and then
+renders the HTML-page with the help of Jinja2.
+"""
 from jinja2 import Environment, FileSystemLoader
 
 
-def render_template(template_name, **kwargs):
+def render_template(template_name, **kwargs) -> str:
     """
     Function that renders the templates using Jinja2.
 
