@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block page_title %}
+{% block title %}
     Create new student
-{% endblock page_title %}
-{% block main %}
+{% endblock %}
+{% block content %}
+    <body>
+    {% include "inc-menu.html" %}
     <h1>Create a new student here!</h1>
     <form method="post">
         <label>
@@ -10,4 +12,5 @@
         </label>
         <button type="submit" class="btn btn-outline-success">Create!</button>
     </form>
-{% endblock main %} 
+    </body>
+{% endblock %}

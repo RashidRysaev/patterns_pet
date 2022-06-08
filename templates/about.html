@@ -1,13 +1,13 @@
-{% extends 'base.html' %}
-
-{% block menu %}
-    {{ super() }}
-{% endblock menu %}
-
-{% block page_title %}
-    About Page
-{% endblock page_title %}
-
-{% block main %}
-    <h3>I am a simple about page</h3>
-{% endblock main %}
+{% extends "base.html" %}
+{% block title %}
+    About us
+{% endblock %}
+{% block content %}
+    <body>
+    {% include "inc-menu.html" %}
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut delectus doloremque hic iste quae quam quod saepe.
+        Aperiam consectetur dolor dolore illum maxime nihil nisi nobis? Nemo qui quod similique?
+    </p>
+    </body>
+{% endblock %}

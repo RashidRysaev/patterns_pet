@@ -1,6 +1,13 @@
+"""
+Module that contains decorators used throughout the framework. Namely,
+it contains the class-based decorator for URL routes and the debugging
+decorator that measures the performance time of the method or function
+it is used on.
+"""
 from time import perf_counter
+from typing import Callable
 
-from bases import NamedSingleton
+from core.bases import NamedSingleton
 
 
 class UrlPaths(metaclass=NamedSingleton):
@@ -24,7 +31,7 @@ class UrlPaths(metaclass=NamedSingleton):
         """
         self.name = name
 
-    def add_route(self, url):
+    def add_route(self, url: str) -> Callable:
         """
         Decorates the callable view class to update the list of url-paths
         in the framework. The url-string becomes the key in the
@@ -33,7 +40,7 @@ class UrlPaths(metaclass=NamedSingleton):
         :param url: a string with the url-address
         """
 
-        def wrapped(view, *args, **kwargs):
+        def wrapped(view: Callable, *args, **kwargs):
             """
             Decorated callable function passed by the decorator method.
             It becomes the value of the url-paths dictionary
@@ -45,7 +52,7 @@ class UrlPaths(metaclass=NamedSingleton):
         return wrapped
 
 
-def debug(func):
+def debug(func: Callable) -> Callable:
     """
     Decorates the function in order to measure its runtime. If you use
     it on a class' method, unfortunately for now it can only give you the
@@ -62,8 +69,8 @@ def debug(func):
         res = func(*args, **kwargs)
         finish = perf_counter()
         print(f'DEBUG.\n'
-            f'Function: {func.__name__};\n'
-            f'Function run time: {finish - start} sec.')
+              f'Function: {func.__name__};\n'
+              f'Function run time: {finish - start} sec.')
         return res
 
     return wrapped

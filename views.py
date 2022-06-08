@@ -1,23 +1,30 @@
+"""
+Module with class-based views for the project.
+"""
 from datetime import datetime
 
-from bases import BaseSerializer
-from template_renderer import render_template
-from core_views import TemplateView, ListView, CreateView
-from core import App
+from core.bases import BaseSerializer
+from core.templator import render_template
+from core.views import TemplateView, ListView, CreateView
+from core.wsgi_core import Application
 from logs.config import Logger
 from models import OnlineUniversity, EmailNotifier, TextMessageNotifier
-from decos import UrlPaths, debug
+from core.decorators import UrlPaths, debug
+from orm.core import UnitOfWork
+from orm.mappers import MapperRegistry
 
 site = OnlineUniversity()
 email_notifier = EmailNotifier()
 text_notifier = TextMessageNotifier()
 logger = Logger('file', 'main')
 routes = UrlPaths()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 
 @routes.add_route('/api/')
 class CoursesApiView:
-    def __call__(self, request: dict):
+    def __call__(self, request: dict) -> (str, list):
         logger.logger(f'{__name__}.py; CoursesApiView; sending the list of'
                       f'courses via API.')
         return '200 Ok', [BaseSerializer(site.courses).save().encode('utf-8')]
@@ -52,9 +59,10 @@ class ContactsView(TemplateView):
 
     @staticmethod
     @debug
-    def save_to_file(request):
+    def save_to_file(request: dict) -> None:
         """
         Saves data from incoming POST-request to file.
+
         :param request: incoming data
         """
         try:
@@ -72,9 +80,10 @@ class ContactsView(TemplateView):
             logger.logger('Data saved successfully.')
 
     @debug
-    def __call__(self, request):
+    def __call__(self, request: dict) -> (str, list):
         """
         Main callable method that does the magic.
+
         :param request: HTTP-request
         :return: tuple, first element is string, second HTML code
         """
@@ -105,7 +114,7 @@ class CreateCourseView(CreateView):
     """
     template_name = 'templates/create_course.html'
 
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         """
         Retrieves the context data for the template and updates it
         with the list of existing courses.
@@ -114,13 +123,15 @@ class CreateCourseView(CreateView):
         context['categories'] = site.course_categories
         return context
 
-    def create_object(self, data):
+    def create_object(self, data: dict):
         """
         Creates a new course object from the data pulled from
         the POST-request.
+
         :param data: new course data
         """
         name = data['name']
+        name = Application.decode_value(name)
         cat_id = data.get('category_id')
         category = None
         if cat_id:
@@ -138,15 +149,17 @@ class CopyCourseView:
     """
 
     @debug
-    def __call__(self, request):
+    def __call__(self, request: dict) -> (str, list):
         """
         Main callable method. Handles the copying of a given
         course by invoking a Prototype Mixin method 'clone'.
+
         :param request: HTTP-requests
         :return: tuple, first element is string, second HTML code
         """
         params = request['request_params']
         name = params['name']
+        name = Application.decode_value(name)
         logger.logger(
             f'{__name__}.py; CopyCourseView; copying course {name}.')
         old_course = site.get_course(name)
@@ -178,7 +191,7 @@ class CreateCategoryView(CreateView):
     """
     template_name = 'templates/create_category.html'
 
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         """
         Retrieves the context data for the template and updates it
         with the list of existing courses.
@@ -187,13 +200,15 @@ class CreateCategoryView(CreateView):
         context['categories'] = site.course_categories
         return context
 
-    def create_object(self, data):
+    def create_object(self, data: dict):
         """
         Creates a new course category object from the data pulled from
         the POST-request.
+
         :param data: new course data
         """
         name = data['name']
+        name = Application.decode_value(name)
         cat_id = data.get('category_id')
         category = None
         if cat_id:
@@ -208,7 +223,15 @@ class StudentsListView(ListView):
     Class-based view for the list of all students.
     """
     template_name = 'templates/students_list.html'
-    queryset = site.students
+
+    def get_queryset(self) -> list:
+        """
+        Retrieves the queryset from the database.
+
+        :return: all current students
+        """
+        mapper = MapperRegistry.get_current_mapper('student')
+        return mapper.return_all()
 
 
 @routes.add_route('/create_student/')
@@ -218,15 +241,19 @@ class StudentCreateView(CreateView):
     """
     template_name = 'templates/create_student.html'
 
-    def create_object(self, data):
+    def create_object(self, data: dict):
         """
         Creates a new student using the data retrieved from
         the POST-request.
+
         :param data: new student data
         """
         name = data['name']
+        name = Application.decode_value(name)
         new_student = site.create_user('student', name)
         site.students.append(new_student)
+        new_student.mark_new()
+        UnitOfWork.get_current().commit()
 
 
 @routes.add_route('/enlist_student/')
@@ -236,7 +263,7 @@ class EnlistStudentView(CreateView):
     """
     template_name = 'templates/enlist_student.html'
 
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         """
         Retrieves the context data for the template and updates it
         with the list of existing courses and students.
@@ -246,15 +273,18 @@ class EnlistStudentView(CreateView):
         context['courses'] = site.courses
         return context
 
-    def create_object(self, data):
+    def create_object(self, data: dict):
         """
         Retrieves the course and student's name from the POST-request
         data. Then retrieves the objects for the two. And finally
         enlists the student in the course.
+
         :param data: POST-request data
         """
         course_name = data['course_name']
+        course_name = Application.decode_value(course_name)
         course = site.get_course(course_name)
         student_name = data['student_name']
+        student_name = Application.decode_value(student_name)
         student = site.get_student(student_name)
         course.add_student(student)

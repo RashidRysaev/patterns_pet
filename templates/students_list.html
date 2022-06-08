@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block page_title %}
+{% block title %}
     List of students
 {% endblock %}
-{% block main %}
+{% block content %}
+    <body>
+    {% include "inc-menu.html" %}
     <h2>Here are our glorious students!</h2>
     <ul>
         {% for object in objects_list %}
@@ -15,4 +17,5 @@
             </li>
         {% endfor %}
     </ul>
+    </body>
 {% endblock %}
