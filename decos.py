@@ -63,8 +63,7 @@ def debug(func):
         finish = perf_counter()
         print(f'DEBUG.\n'
             f'Function: {func.__name__};\n'
-            f'Module: {func.__module__};\n'
-            f'Run time: {finish - start} sec.')
+            f'Function run time: {finish - start} sec.')
         return res
 
     return wrapped

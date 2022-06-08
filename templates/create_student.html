@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block page_title %}
+    Create new student
+{% endblock page_title %}
+{% block main %}
+    <h1>Create a new student here!</h1>
+    <form method="post">
+        <label>
+            <input type="text" name="name" placeholder="Student's name">
+        </label>
+        <button type="submit" class="btn btn-outline-success">Create!</button>
+    </form>
+{% endblock main %} 

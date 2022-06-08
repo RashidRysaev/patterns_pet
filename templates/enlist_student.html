@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block page_title %}
+    Enlist a student in a course
+{% endblock %}
+{% block main %}
+    <h1>Enlist a student in a new course!</h1>
+    <form method="post">
+        <label>
+            <select size="5" name="course_name">
+                {% for course in courses %}
+                    <option value="{{ course.name }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <select size="5" name="student_name">
+                {% for student in students %}
+                    <option value="{{ student.name }}">{{ student.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <br>
+        <button type="submit" class="btn btn-outline-success">Enlist!</button>
+    </form>
+{% endblock %} 
